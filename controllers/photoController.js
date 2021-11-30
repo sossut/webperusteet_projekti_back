@@ -15,7 +15,7 @@ const photo_get = (req, res) => {
 
 const photo_post = (req, res) => {
   console.log(req.body, req.file);
-  res.send('From this endpoint you can add cats.');
+  res.send('From this endpoint you can add photos.');
 };
 
 module.exports = {
