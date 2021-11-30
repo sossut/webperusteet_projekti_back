@@ -7,6 +7,8 @@ const {photo_list_get, photo_get, photo_post,} = require('../controllers/photoCo
 
 const router = express.Router();
 
+router.route('/');
+
 router.get('/', photo_list_get);
 
 router.get('/:id', photo_get);
