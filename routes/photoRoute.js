@@ -2,7 +2,7 @@
 const express = require('express');
 const multer = require('multer');
 const upload = multer({ dest: './uploads/'});
-const {photo_list_get, photo_get, photo_post,} = require('../controllers/photoController');
+const {photo_list_get, photo_get, photo_post, photo_put, photo_delete} = require('../controllers/photoController');
 
 
 const router = express.Router();
@@ -15,13 +15,9 @@ router.get('/:id', photo_get);
 
 router.post('/', upload.single('photo'), photo_post);
 
-router.put('/', (req, res) => {
-  res.send('From this endpoint you can edit photos.')
-});
+router.put('/', photo_put);
 
-router.delete('/', (req, res) => {
-  res.send('From this endpoint you can delete photos.')
-});
+router.delete('/:id', photo_delete);
 
 module.exports = router;
 

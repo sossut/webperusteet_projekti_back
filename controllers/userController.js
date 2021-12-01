@@ -4,7 +4,7 @@ const userModel = require('../models/userModel');
 const { httpError } = require('../utils/errors');
 
 // const users = userModel.users;
-const { getAllUsers, getUser, addUser } = userModel;
+const { getAllUsers, getUser, addUser,  } = userModel;
 
 const user_list_get = async (req, res, next) => {  
   try {
