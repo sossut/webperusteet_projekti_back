@@ -1,7 +1,9 @@
 'use strict';
-const photoModel = require('../models/photoModel');
 
-const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto }= photoModel;
+const { validationResult } = require('express-validator');
+const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto } = require('../models/photoModel');
+
+const { httpError } = require('../utils/errors');
 
 const photo_list_get = async (req, res, next) => {
   
@@ -39,6 +41,17 @@ const photo_get = async (req, res, next) => {
 
 const photo_post = async (req, res, next) => {
   console.log(req.body, req.file);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log('photo_post validation', errors.array());
+    next(httpError('invalid data', 400));
+    return;
+  }
+  if (!req.file) {
+    const err = httpError('file not valid', 400);
+    next(err);
+    return;
+  }
   try {
     const { description, userID} = req.body;
     const result = await addPhoto(description, req.file.filename, userID, next);
@@ -55,6 +68,12 @@ const photo_post = async (req, res, next) => {
 
 const photo_put = async (req, res, next) => {
   console.log(req.body);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log('photo_put validation', errors.array());
+    next(httpError('invalid data', 400));
+    return;
+  }
   try {
     const {description, owner, id} = req.body;
     const result = await modifyPhoto(description, owner, id, next);
