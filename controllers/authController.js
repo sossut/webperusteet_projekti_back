@@ -8,7 +8,6 @@ const salt = bcrypt.genSaltSync(12);
 const { httpError } = require('../utils/errors');
 
 const login = (req, res, next) => {
-  // TODO: add passport authenticate
     passport.authenticate('local', {session: false}, (err, user, info) => {
         
         console.log('login info', err, user, info);
@@ -42,7 +41,7 @@ const user_post = async (req, res, next) => {
   try {
     console.log('from form', req.body);
     const { name, email, passwd } = req.body;
-    // hash password
+
     const hash = bcrypt.hashSync(passwd, salt);
     const result = await addUser(name, email, hash, next);
     if (result.affectedRows > 0) {
