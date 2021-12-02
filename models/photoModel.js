@@ -37,9 +37,17 @@ const addPhoto = async (description, filename, userID, next) => {
   }
 }
 
-const modifyPhoto = async (description, userID, id, next) => {
+const modifyPhoto = async (description, userID, id, role, next) => {
+  let sql = 'UPDATE Photo SET Description = ? WHERE PhotoID = ? AND UserID = ?';
+  let params = [description, id, userID];
+
+  if (role === 0) {
+    sql = 'UPDATE Photo SET Description = ?, UserID = ? WHERE PhotoID = ?';
+    params = [description, userID, id];
+  }
+  console.log('sql', sql);
   try {
-    const [rows] = await promisePool.execute('UPDATE Photo SET Description = ?, UserID = ? WHERE PhotoID = ?', [description, userID, id]);
+    const [rows] = await promisePool.execute(sql, params);
     return rows;
   } catch (e) {
     console.error('modifyPhoto error', e.message);
@@ -47,9 +55,15 @@ const modifyPhoto = async (description, userID, id, next) => {
   }
 }
 
-const deletePhoto = async (id, next) => {
+const deletePhoto = async (id, userID, role, next) => {
+  let sql = 'DELETE FROM Photo WHERE PhotoID = ? AND UserID = ?';
+  let params = [id, userID];
+  if (role === 0) {
+    sql = 'DELETE FROM Photo WHERE PhotoID = ?';
+    params = [id];
+  }
   try {
-    const [rows] = await promisePool.execute('DELETE FROM Photo WHERE PhotoID = ?', [id]);
+    const [rows] = await promisePool.execute(sql, params);
     return rows;
   } catch (e) {
     console.error('deletePhoto error', e.message);

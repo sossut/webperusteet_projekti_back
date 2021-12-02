@@ -6,7 +6,7 @@ const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto } = require('.
 const { httpError } = require('../utils/errors');
 
 const photo_list_get = async (req, res, next) => {
-  
+    console.log('asdas');
     try {
       const photos = await  getAllPhotos(next);
       
@@ -40,7 +40,7 @@ const photo_get = async (req, res, next) => {
 };
 
 const photo_post = async (req, res, next) => {
-  console.log(req.body, req.file);
+  console.log('post', req.body, req.file, req.user);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log('photo_post validation', errors.array());
@@ -53,8 +53,8 @@ const photo_post = async (req, res, next) => {
     return;
   }
   try {
-    const { description, userID} = req.body;
-    const result = await addPhoto(description, req.file.filename, userID, next);
+    const { description} = req.body;
+    const result = await addPhoto(description, req.file.filename, req.user.UserID, next);
     if (result.affectedRows > 0) {
       res.json({message: 'photo added', PhotoID: result.insertId,});
     } else {
@@ -67,7 +67,7 @@ const photo_post = async (req, res, next) => {
 };
 
 const photo_put = async (req, res, next) => {
-  console.log(req.body);
+  console.log(req.body, req.params, req.user);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log('photo_put validation', errors.array());
@@ -75,8 +75,11 @@ const photo_put = async (req, res, next) => {
     return;
   }
   try {
-    const {description, owner, id} = req.body;
-    const result = await modifyPhoto(description, owner, id, next);
+    const {description} = req.body;
+
+    const userID = req.user.Role === 0 ? req.body.UserID : req.user.UserID;
+
+    const result = await modifyPhoto(description, userID, req.params.id, req.user.Role, next);
     if (result.affectedRows > 0) {
       res.json({message: 'photo modified', PhotoID: result.insertId});
     } else {
@@ -90,7 +93,7 @@ const photo_put = async (req, res, next) => {
 
 const photo_delete = async (req, res, next) => {
   try {
-    const response = await deletePhoto(req.params.id, next);
+    const response = await deletePhoto(req.params.id, req.user.UserID, req.user.Role, next);
     if (response.affectedRows > 0) {
       res.json({message: 'photo deleted', PhotoID: response.insertId});
     } else {
