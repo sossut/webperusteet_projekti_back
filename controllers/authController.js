@@ -1,6 +1,10 @@
 'use strict';
 const jwt = require('jsonwebtoken');
+const {validationResult} = require('express-validator');
 const passport = require('passport');
+const {addUser} = require('../models/userModel');
+const bcrypt = require('bcryptjs');
+const salt = bcrypt.genSaltSync(12);
 const { httpError } = require('../utils/errors');
 
 const login = (req, res, next) => {
@@ -27,6 +31,35 @@ const login = (req, res, next) => {
     (req, res, next);
 };
 
+const user_post = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log('user_post validation', errors.array());
+    next(httpError('invalid data', 400));
+    return;
+  }
+
+  try {
+    console.log('from form', req.body);
+    const { name, email, passwd } = req.body;
+    // hash password
+    const hash = bcrypt.hashSync(passwd, salt);
+    const result = await addUser(name, email, hash, next);
+    if (result.affectedRows > 0) {
+      res.json({
+        message: 'user added',
+        user_id: result.insertId,
+      });
+    } else {
+      next(httpError('No user inserted', 400));
+    }
+  } catch (e) {
+    console.log('user_post error', e.message);
+    next(httpError('internal server error', 500));
+  }
+};
+
 module.exports = {
   login,
+  user_post,
 };
