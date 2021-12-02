@@ -6,7 +6,7 @@ const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto } = require('.
 const { httpError } = require('../utils/errors');
 
 const photo_list_get = async (req, res, next) => {
-    console.log('asdas');
+    
     try {
       const photos = await  getAllPhotos(next);
       
