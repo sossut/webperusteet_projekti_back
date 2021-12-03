@@ -3,6 +3,8 @@
 const { validationResult } = require('express-validator');
 const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto } = require('../models/photoModel');
 
+const { makeThumbnail } = require('../utils/resize');
+
 const { httpError } = require('../utils/errors');
 
 const photo_list_get = async (req, res, next) => {
@@ -53,13 +55,23 @@ const photo_post = async (req, res, next) => {
     return;
   }
   try {
+    const thumb = await makeThumbnail(
+      
+      req.file.path,
+      './thumbnails/' + req.file.filename
+    );
+    
     const { description} = req.body;
     const result = await addPhoto(description, req.file.filename, req.user.UserID, next);
-    if (result.affectedRows > 0) {
-      res.json({message: 'photo added', PhotoID: result.insertId,});
-    } else {
-      next(httpError('No photo inserted', 400));
+
+    if (thumb) {
+      if (result.affectedRows > 0) {
+        res.json({message: 'photo added', PhotoID: result.insertId,});
+      } else {
+        next(httpError('No photo inserted', 400));
+      }
     }
+    
   } catch (e) {
     console.log('photo_post error', e.message);
     next(httpError('internal server error', 500));
