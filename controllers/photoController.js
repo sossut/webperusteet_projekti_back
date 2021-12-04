@@ -121,7 +121,7 @@ const photo_like = async (req, res, next) => {
   try {
     const response = await likePhoto(req.params.id, req.user.UserID, next);
     if (response.affectedRows > 0 ) {
-      res.json({message: 'photo liked', PhotoID: response.response.insertId});
+      res.json({message: 'photo liked', PhotoID: response.insertId});
     } else {
       next(httpError('No photo liked', 400));
     }
