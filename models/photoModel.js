@@ -6,7 +6,7 @@ const promisePool = pool.promise();
 
 const getAllPhotos = async (next) => {
   try {
-    const [rows] = await promisePool.execute('SELECT PhotoID, PostedDate, Description, Filename, Location, Photo.UserID, UserTable.UserName FROM Photo INNER JOIN UserTable ON UserTable.UserID = Photo.UserID');
+    const [rows] = await promisePool.execute('SELECT Photo.*, UserTable.UserName, (SELECT COUNT(Likes.PhotoID) FROM Likes WHERE Likes.PhotoID = Photo.PhotoID) AS LikeCount FROM Photo INNER JOIN UserTable ON UserTable.UserID = Photo.UserID LEFT JOIN Likes ON Likes.PhotoID = Photo.PhotoID GROUP BY Photo.PhotoID;');
     return rows;
   } catch (e) {
     console.error('getAllPhotos error', e.message);
@@ -14,6 +14,18 @@ const getAllPhotos = async (next) => {
   }
 }
 
+/* SQ query without likes
+SELECT PhotoID, PostedDate, Description, Filename, Location, Photo.UserID, UserTable.UserName FROM Photo INNER JOIN UserTable ON UserTable.UserID = Photo.UserID
+*/
+/* 
+SQL-query with the count of likes per post
+
+SELECT Photo.*, UserTable.UserName, (SELECT COUNT(Likes.PhotoID) FROM Likes WHERE Likes.PhotoID = Photo.PhotoID) AS LikeCount
+FROM Photo
+INNER JOIN UserTable ON UserTable.UserID = Photo.UserID
+LEFT JOIN Likes ON Likes.PhotoID = Photo.PhotoID
+GROUP BY Photo.PhotoID;
+*/
 const getPhoto = async (id, next) => {
   try {
     const [rows] = await promisePool.execute('SELECT * FROM Photo WHERE PhotoID = ?', [id]);
@@ -71,6 +83,16 @@ const deletePhoto = async (id, userID, role, next) => {
   }
 }
 
+const likePhoto = async (id, userID, next) => {
+  try {
+    const [rows] = await promisePool.execute('INSERT INTO Likes (PhotoID, UserID) VALUES (?, ?);', [id, userID]);
+    return rows;
+  } catch (e) {
+    console.error('likePhoto error', e.message);
+    next(httpError('Database error', 500));
+  }
+}
+
 module.exports = {
   
   getPhoto,
@@ -78,4 +100,5 @@ module.exports = {
   addPhoto,
   modifyPhoto,
   deletePhoto,
+  likePhoto,
 };
