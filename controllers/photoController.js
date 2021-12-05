@@ -7,6 +7,8 @@ const { makeThumbnail } = require('../utils/resize');
 
 const { httpError } = require('../utils/errors');
 
+const { getCoordinates } = require('../utils/imageMeta');
+
 const photo_list_get = async (req, res, next) => {
     
     try {
@@ -55,14 +57,23 @@ const photo_post = async (req, res, next) => {
     return;
   }
   try {
+    const location = await getCoordinates(req.file.path);
+    req.body.location = location;
+  } catch (e) {
+    req.body.location = [0, 0];
+  }
+  
+  
+
+  try {
     const thumb = await makeThumbnail(
-      
       req.file.path,
       './thumbnails/' + req.file.filename
     );
     
-    const { description} = req.body;
-    const result = await addPhoto(description, req.file.filename, req.user.UserID, next);
+
+    const { description, location} = req.body;
+    const result = await addPhoto(description, req.file.filename,  JSON.stringify(location), req.user.UserID, next);
 
     if (thumb) {
       if (result.affectedRows > 0) {

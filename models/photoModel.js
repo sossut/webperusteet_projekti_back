@@ -36,12 +36,17 @@ const getPhoto = async (id, next) => {
   }    
 }
 
-const addPhoto = async (description, filename, userID, next) => {
-  console.log(description, filename, userID);
+const addPhoto = async (description, filename, location, userID, next) => {
+  console.log(description, filename, location, userID);
+  let sql = 'INSERT INTO Photo (PostedDate, Description, Filename, Location, UserID) VALUES (NOW(), ?, ?, ?, ?)';
+  let params = [description, filename, location, userID];
+  if (!location || location === '[0,0]') {
+    sql = 'INSERT INTO Photo (PostedDate, Description, Filename, Location, UserID) VALUES (NOW(), ?, ?, "[]", ?)';
+    params = [description, filename, userID]
+  }
   try {
-    
-//TODO location
-    const [rows] = await promisePool.execute(`INSERT INTO Photo (PostedDate, Description, Filename, Location, UserID) VALUES (NOW(), ?, ?, '[]', ?)`, [description, filename, userID]);
+    console.log(sql);
+    const [rows] = await promisePool.execute(sql, params);
     return rows;
   } catch (e) {
     console.error('addPhoto error', e.message);
