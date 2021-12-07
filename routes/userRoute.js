@@ -7,6 +7,7 @@ const {
   user_get,
   
   checkToken,
+  
 } = require('../controllers/userController');
 const router = express.Router();
 
@@ -15,7 +16,6 @@ router.get('/token', checkToken);
 router.get('/', user_list_get);
 
 router.get('/:id', user_get);
-
 
 
 router.put('/', (req, res) => {

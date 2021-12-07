@@ -1,7 +1,7 @@
 'use strict';
 // userController
 const { validationResult } = require('express-validator');
-const { getAllUsers, getUser, addUser } = require('../models/userModel');
+const { getAllUsers, getUser, } = require('../models/userModel');
 const { httpError } = require('../utils/errors');
 
 const user_list_get = async (req, res, next) => {  
@@ -20,9 +20,9 @@ const user_list_get = async (req, res, next) => {
 
 const user_get = async (req, res, next) => {
   try {
-    const vastaus = await getUser(req.params.id, next);
-    if (vastaus.length > 0) {
-      res.json(vastaus.pop());
+    const response = await getUser(req.params.id, next);
+    if (response.length > 0) {
+      res.json(response.pop());
     } else {
       
       next(httpError('No user found', 404));
@@ -45,7 +45,7 @@ const checkToken = (req, res, next) => {
 
 module.exports = {
   user_list_get,
-  user_get,
-  
+  user_get,  
   checkToken,
+  
 };

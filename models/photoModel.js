@@ -90,7 +90,7 @@ const deletePhoto = async (id, userID, role, next) => {
   }
 }
 
-const deleteLike = async (id, userID) => {
+const deleteLike = async (id, userID, next) => {
   try {
     const [rows] = await promisePool.execute('DELETE FROM Likes WHERE PhotoID = ? AND UserID = ?;', [id, userID]);
     return rows;
@@ -110,6 +110,18 @@ const likePhoto = async (id, userID, next) => {
   }
 }
 
+const getLikedPhotos = async (userId, next) => {
+  try {
+    console.log('1',userId);
+    const [rows] = await promisePool.execute('SELECT Photo.*, Likes.UserID AS Liker, UserTable.UserName, (SELECT COUNT(Likes.PhotoID) FROM Likes WHERE Likes.PhotoID = Photo.PhotoID) AS LikeCount FROM Photo INNER JOIN Likes ON Likes.PhotoID = Photo.PhotoID INNER JOIN UserTable ON UserTable.UserID = Photo.UserID WHERE Likes.UserID = 9;',
+    [userId]);
+    return rows;
+  } catch (e) {
+    console.error('getLikedPhotos error', e.message);
+    next(httpError('Database error', 500));
+  }
+}
+
 module.exports = {
   
   getPhoto,
@@ -118,4 +130,5 @@ module.exports = {
   modifyPhoto,
   deletePhoto,
   likePhoto,
+  getLikedPhotos
 };
