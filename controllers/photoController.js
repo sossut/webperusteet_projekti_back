@@ -1,7 +1,7 @@
 'use strict';
 
 const { validationResult } = require('express-validator');
-const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto, likePhoto, getLikedPhotos } = require('../models/photoModel');
+const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto, likePhoto, getLikedPhotos, randomPhoto } = require('../models/photoModel');
 
 const { makeThumbnail } = require('../utils/resize');
 
@@ -144,7 +144,7 @@ const photo_like = async (req, res, next) => {
 
 const photo_get_liked_photos = async (req, res, next) => {
   try {
-    console.log(req.params.id);
+    
     const response = await getLikedPhotos(req.params.id, next);
     console.log(response);
     if (response.length > 0) {
@@ -153,7 +153,21 @@ const photo_get_liked_photos = async (req, res, next) => {
       next(httpError('No liked photos found', 404));
     }
   } catch (e) {
-    console.log('user_get_liked_photos error', e.message);
+    console.log('photo_get_liked_photos error', e.message);
+    next(httpError('internal server error', 500));
+  }
+}
+
+const photo_random = async (req, res, next) => {
+  try {
+    const response = await randomPhoto(next);
+    if (response.length > 0) {
+      res.json(response.pop());
+    } else {
+      next(httpError('No random photo found', 404));
+    }
+  } catch (e) {
+    console.log('photo_random error', e.message);
     next(httpError('internal server error', 500));
   }
 }
@@ -166,4 +180,5 @@ module.exports = {
   photo_delete,
   photo_like,
   photo_get_liked_photos,
+  photo_random,
 };
