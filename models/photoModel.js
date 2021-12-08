@@ -14,18 +14,7 @@ const getAllPhotos = async (next) => {
   }
 }
 
-/* SQ query without likes
-SELECT PhotoID, PostedDate, Description, Filename, Location, Photo.UserID, UserTable.UserName FROM Photo INNER JOIN UserTable ON UserTable.UserID = Photo.UserID
-*/
-/* 
-SQL-query with the count of likes per post
 
-SELECT Photo.*, UserTable.UserName, (SELECT COUNT(Likes.PhotoID) FROM Likes WHERE Likes.PhotoID = Photo.PhotoID) AS LikeCount
-FROM Photo
-INNER JOIN UserTable ON UserTable.UserID = Photo.UserID
-LEFT JOIN Likes ON Likes.PhotoID = Photo.PhotoID
-GROUP BY Photo.PhotoID;
-*/
 const getPhoto = async (id, next) => {
   try {
     const [rows] = await promisePool.execute('SELECT * FROM Photo WHERE PhotoID = ?', [id]);
@@ -112,7 +101,7 @@ const likePhoto = async (id, userID, next) => {
 
 const getLikedPhotos = async (userId, next) => {
   try {
-    console.log('1',userId);
+    
     const [rows] = await promisePool.execute('SELECT Photo.*, Likes.UserID AS Liker, UserTable.UserName, (SELECT COUNT(Likes.PhotoID) FROM Likes WHERE Likes.PhotoID = Photo.PhotoID) AS LikeCount FROM Photo INNER JOIN Likes ON Likes.PhotoID = Photo.PhotoID INNER JOIN UserTable ON UserTable.UserID = Photo.UserID WHERE Likes.UserID = ?;',
     [userId]);
     return rows;
@@ -122,12 +111,25 @@ const getLikedPhotos = async (userId, next) => {
   }
 }
 
-const randomPhoto = async(next) => {
+const randomPhoto = async (next) => {
   try {
-    const [rows] = await promisePool.execute('SELECT Photo.*, UserTable.UserName, (SELECT COUNT(Likes.PhotoID) FROM Likes WHERE Likes.PhotoID = Photo.PhotoID) AS LikeCount FROM Photo INNER JOIN Likes ON Likes.PhotoID = Photo.PhotoID INNER JOIN UserTable ON UserTable.UserID = Photo.UserID GROUP BY Photo.PhotoID ORDER BY RAND() LIMIT 1;');
+    const [rows] = await promisePool.execute('SELECT Photo.*, UserTable.UserName, (SELECT COUNT(Likes.PhotoID) FROM Likes WHERE Likes.PhotoID = Photo.PhotoID) AS LikeCount FROM Photo LEFT JOIN Likes ON Likes.PhotoID = Photo.PhotoID INNER JOIN UserTable ON UserTable.UserID = Photo.UserID GROUP BY Photo.PhotoID ORDER BY RAND() LIMIT 1;');
     return rows;
   } catch (e) {
     console.error('randomPhoto error', e.message);
+    next(httpError('Database error', 500));
+  }
+}
+
+const searchPhoto = async (query, next) => {
+  try {
+    console.log(query);
+    const [rows] = await promisePool.execute('SELECT Photo.*, UserTable.UserName, (SELECT COUNT(Likes.PhotoID) FROM Likes WHERE Likes.PhotoID = Photo.PhotoID) AS LikeCount FROM Photo LEFT JOIN Likes ON Likes.PhotoID = Photo.PhotoID INNER JOIN UserTable ON UserTable.UserID = Photo.UserID  WHERE Photo.Description LIKE ? GROUP BY Photo.PhotoID;',
+    [`%${query}%`]);
+    console.log(rows);
+    return rows;
+  } catch (e) {
+    console.error('searchPhoto error', e.message);
     next(httpError('Database error', 500));
   }
 }
@@ -142,4 +144,5 @@ module.exports = {
   likePhoto,
   getLikedPhotos,
   randomPhoto,
+  searchPhoto,
 };

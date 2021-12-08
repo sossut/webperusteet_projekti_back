@@ -1,7 +1,7 @@
 'use strict';
 
 const { validationResult } = require('express-validator');
-const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto, likePhoto, getLikedPhotos, randomPhoto } = require('../models/photoModel');
+const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto, likePhoto, getLikedPhotos, randomPhoto, searchPhoto } = require('../models/photoModel');
 
 const { makeThumbnail } = require('../utils/resize');
 
@@ -172,6 +172,21 @@ const photo_random = async (req, res, next) => {
   }
 }
 
+const photo_search = async (req, res, next) => {
+  try {
+    console.log(req.params.query);
+    const response = await searchPhoto(req.params.query);
+    if (response.length > 0) {
+      res.json(response);
+    } else {
+      next(httpError('No photos found', 404));
+    }
+  } catch (e) {
+    console.log('photo_search error', e.message);
+    next(httpError('internal server error', 500));
+  }
+}
+
 module.exports = {
   photo_list_get,
   photo_get,
@@ -181,4 +196,5 @@ module.exports = {
   photo_like,
   photo_get_liked_photos,
   photo_random,
+  photo_search,
 };

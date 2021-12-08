@@ -10,8 +10,15 @@ const passport = require('./utils/pass');
 const { httpError } = require('./utils/errors');
 
 const app = express();
-const port = 3000;
+
 app.use(cors());
+
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+if (process.env.NODE_ENV === 'production') {
+  require('./utils/production')(app, process.env.PORT, process.env.HTTPS_PORT);
+} else {
+  require('./utils/localhost')(app, process.env.PORT);
+}
 
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
@@ -33,12 +40,13 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  res.status(err.status || 500).json({
-    error: {
-      message: err.message || 'internal server error',
-      status: err.status || 500,
-    },
-  });
+    console.log(err.status, err.message);
+    res.status(err.status).send({message: err.message});
+//   res.status(err.status || 500).send({
+//     error: {
+//       message: err.message || 'internal server error',
+//       status: err.status || 500,
+//     },
+//   });
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));

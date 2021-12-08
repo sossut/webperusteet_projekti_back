@@ -17,10 +17,10 @@ passport.use(
       
       console.log('Local strategy', user); // result is binary row
       if (!user) {
-        return done(null, false);
+        return done(null, false, { message: 'user' });
       }
       if (!bcrypt.compareSync(password, user.Password)) {
-        return done(null, false);
+        return done(null, false, { message: 'pw' });
       }
       return done(null, { ...user }, { message: 'Logged In Successfully' }); 
     } catch (err) {

@@ -23,7 +23,7 @@ const login = (req, res, next) => {
             delete user.Password;
             const token = jwt.sign(user, process.env.JWT_SECRET);
             
-            console.log(token);
+            
             return res.json({user, token});
         });
     })
