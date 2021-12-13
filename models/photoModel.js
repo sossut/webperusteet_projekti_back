@@ -17,7 +17,7 @@ const getAllPhotos = async (next) => {
 
 const getPhoto = async (id, next) => {
   try {
-    const [rows] = await promisePool.execute('SELECT * FROM Photo WHERE PhotoID = ?', [id]);
+    const [rows] = await promisePool.execute('SELECT Photo.*, UserTable.UserName, (SELECT COUNT(Likes.PhotoID) FROM Likes WHERE Likes.PhotoID = Photo.PhotoID) AS LikeCount FROM Photo INNER JOIN UserTable ON UserTable.UserID = Photo.UserID LEFT JOIN Likes ON Likes.PhotoID = Photo.PhotoID WHERE Photo.PhotoID = ? GROUP BY Photo.PhotoID;', [id]);
     return rows;
   } catch (e) {
     console.error('getPhoto error', e.message);
