@@ -62,7 +62,7 @@ const modifyPhoto = async (description, userID, id, role, next) => {
 }
 
 const deletePhoto = async (id, userID, role, next) => {
-  deleteLike(id, userID);
+  deleteAllLikes(id);
   let sql = 'DELETE FROM Photo WHERE PhotoID = ? AND UserID = ?';
   let params = [id, userID];
   if (role === 0) {
@@ -95,6 +95,16 @@ const likePhoto = async (id, userID, next) => {
     return rows;
   } catch (e) {
     console.error('likePhoto error', e.message);
+    next(httpError('Database error', 500));
+  }
+}
+
+const deleteAllLikes = async (id, next) => {
+  try {
+    const [rows] = await promisePool.execute('DELETE FROM Likes WHERE PhotoID = ?;', [id]);
+    return rows;
+  } catch (e) {
+    console.error('deleteAllLikes error', e.message);
     next(httpError('Database error', 500));
   }
 }
