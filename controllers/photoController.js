@@ -1,7 +1,7 @@
 'use strict';
 
 const { validationResult } = require('express-validator');
-const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto, likePhoto, getLikedPhotos, randomPhoto, searchPhoto } = require('../models/photoModel');
+const {getAllPhotos, getPhoto, addPhoto, modifyPhoto, deletePhoto, likePhoto, getLikedPhotos, randomPhoto, searchPhoto, deleteLike } = require('../models/photoModel');
 
 const { makeThumbnail } = require('../utils/resize');
 
@@ -142,11 +142,26 @@ const photo_like = async (req, res, next) => {
   }
 }
 
+const photo_delete_like = async (req, res, next) => {
+  try {
+    const response = await deleteLike(req.params.id, req.user.UserID, next);
+    console.log('like delete', response);
+    if (response.affectedRows > 0 ) {
+      res.json({message: 'like deleted', PhotoID: response.insertId});
+    } else {
+      next(httpError('No like deleted', 400));
+    }  
+  } catch (e) {
+    console.log('photo_delete_like error', e.message);
+    next(httpError('internal server error', 500));
+  }
+}
+
 const photo_get_liked_photos = async (req, res, next) => {
   try {
     
     const response = await getLikedPhotos(req.params.id, next);
-    console.log(response);
+   // console.log(response);
     if (response.length > 0) {
       res.json(response);
     } else {
@@ -197,4 +212,5 @@ module.exports = {
   photo_get_liked_photos,
   photo_random,
   photo_search,
+  photo_delete_like,
 };
